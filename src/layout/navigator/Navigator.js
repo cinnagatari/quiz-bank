@@ -1,29 +1,28 @@
-import React from 'react';
-import NavItem from './components/NavItem';
-
-const ITEMS = [
-    { id: 0, tag: "a", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" },
-    { id: 1, tag: "b", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" },
-    { id: 2, tag: "c", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" },
-    { id: 3, tag: "d", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" },
-    { id: 4, tag: "e", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" },
-    { id: 5, tag: "f", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" }
-]
-
-const LASTITEM = { id: "last", tag: "last", img: "https://puu.sh/Fa3As/40e9ef44e9.png", link: "#" };
-
+import React, { useContext } from 'react';
+import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import UserContext from '../../util/UserContext';
 
 export default function Navigator() {
 
+    let user = useContext(UserContext).username;
+
     return (
-        <div className="navigator">
-            <div>
-                {ITEMS.map(item => <NavItem key={item.id} item={item} />)}
-            </div>
-            <div>
-                <NavItem key={LASTITEM.id} item={LASTITEM} />
-            </div>
-        </div>
+        <Navbar bg="light" expand="lg">
+            <Navbar.Brand as={Link} to="/"><img class="logo" alt="logo" src="https://i.imgur.com/eMcz8Xs.png" /></Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="mr-auto">
+                    <Nav.Link as={Link} to="/">Dashboard</Nav.Link>
+                    <Nav.Link as={Link} to="/questions">Questions</Nav.Link>
+                </Nav>
+                <Nav className="justify-content-end">
+                    <NavDropdown title={user} id="basic-nav-dropdown">
+                        <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
+                    </NavDropdown>
+                </Nav>
+            </Navbar.Collapse>
+        </Navbar>
     );
 }
 
