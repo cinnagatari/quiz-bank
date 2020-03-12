@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Accordion, Card, Table, ProgressBar, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
+import npmRun from 'npm-run';
 
 const COURSES = [
     {
@@ -39,6 +39,7 @@ const COURSES = [
 export default function Questions() {
 
     let [courses, setCourses] = useState(COURSES);
+    console.log(npmRun);
 
     return (
         <Accordion defaultActiveKey="0">
