@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
-import { Button } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import SimpleMDE from "react-simplemde-editor";
 import AceEditor from "react-ace";
 import "easymde/dist/easymde.min.css";
@@ -15,13 +15,30 @@ const QUESTION = {
     id: 1,
     title: "findMax",
     question: "Given an array, find the max.",
-    template: "def solve(list):"
+    template: "def solve(list):",
+    driver: "print( solve([1,2,3,7,2]) )"
 };
 
 export default function Question({ match }) {
     let [question, setQuestion] = useState(QUESTION);
+    let [driver, setDriver] = useState(QUESTION.driver);
     let [source, setSource] = useState(QUESTION.template);
     let [output, setOutput] = useState("");
+    let [mode, setMode] = useState("python");
+
+    function test() {
+        let p = path.resolve(__dirname) + `temp\\`;
+        p = p + "output.py";
+        fs.writeFile(p, source + "\n" + driver, err => {
+            if (err) console.log(err);
+            else
+                exec("python " + p, (error, stdout, stderr) => {
+                    if (error) console.log(error);
+                    if (stderr) console.log(stderr);
+                    setOutput(stdout);
+                });
+        });
+    }
 
     function submit() {
         let p = path.resolve(__dirname) + `temp\\`;
@@ -44,10 +61,14 @@ export default function Question({ match }) {
     return (
         <div className="flex-column center">
             <Prompt question={question.question} />
-            <CodeEditor source={source} setSource={setSource} />
+            <CodeEditor source={source} setSource={setSource} mode={mode} />
+            <DriverEditor driver={driver} setDriver={setDriver} mode={mode} />
+            <div>
+            <Button variant="primary" onClick={() => test()}>Test</Button>
             <Button variant="primary" onClick={() => submit()}>
                 Submit
             </Button>
+            </div>
             <Output output={output} />
         </div>
     );
@@ -68,6 +89,24 @@ function Prompt({ question }) {
                 status: false
             }}
             style={promptStyle}
+        />
+    );
+}
+
+function DriverEditor({ driver, setDriver }) {
+
+    return (
+        <AceEditor
+            mode="python"
+            theme="github"
+            value={driver}
+            onChange={value => setDriver(value)}
+            fontSize="18px"
+            name="code"
+            showPrintMargin={false}
+            editorProps={{ $blockScrolling: true }}
+            style={driverStyle}
+            maxLines={Infinity}
         />
     );
 }
@@ -102,6 +141,13 @@ function Output({ output }) {
             maxLines={Infinity}
         />
     );
+}
+
+const driverStyle = {
+    width: "80%",
+    margin: "5px",
+    borderRadius: "10px",
+    minHeight: "50px"
 }
 
 const codeStyle = {

@@ -8,7 +8,7 @@ export default function Navigator() {
     let user = useContext(UserContext).username;
 
     return (
-        <Navbar bg="light" expand="lg">
+        <Navbar bg="light" expand="lg" className="navigator">
             <Navbar.Brand as={Link} to="/"><img className="logo" alt="logo" src="https://i.imgur.com/eMcz8Xs.png" /></Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">

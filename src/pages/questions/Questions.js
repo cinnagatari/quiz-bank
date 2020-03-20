@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Accordion, Card, Table, ProgressBar, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const TAGS = [
     {
@@ -46,6 +47,19 @@ export default function Questions() {
     let [sections, setSections] = useState([]);
 
     useEffect(() => {
+
+        axios({
+            method: 'get',
+            url: "https://api.irvinecode.net/api/v1/codequizTag",
+            header: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then(res => {
+            console.log(res);   
+        }).catch(err => {
+            console.log(err)
+        })
+
         let sections = [];
         TAGS.forEach(tag => {
             let title = tag.title;
