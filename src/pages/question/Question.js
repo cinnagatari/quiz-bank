@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import path from "path";
 import fs from "fs";
+import storage from "electron-json-storage";
+import axios from 'axios';
 import { exec } from "child_process";
 import { Button, ButtonGroup } from "react-bootstrap";
 import SimpleMDE from "react-simplemde-editor";
@@ -20,9 +22,9 @@ const QUESTION = {
 };
 
 export default function Question({ match }) {
-    let [question, setQuestion] = useState(QUESTION);
-    let [driver, setDriver] = useState(QUESTION.driver);
-    let [source, setSource] = useState(QUESTION.template);
+    let [question, setQuestion] = useState({ text: "hi" });
+    let [driver, setDriver] = useState("");
+    let [source, setSource] = useState("");
     let [output, setOutput] = useState("");
     let [mode, setMode] = useState("python");
 
@@ -55,12 +57,28 @@ export default function Question({ match }) {
     }
 
     useEffect(() => {
-        console.log(match.params.question);
+        storage.get('token', (err, data) => {
+            if(err) console.log(err);
+            else {
+                axios({
+                    url: `http://api.irvinecode.net/api/v1/codequiz/${match.params.id}`,
+                    method: 'get',
+                    headers: {
+                        Authorization: `Bearer ${data.token}`
+                    }
+                }).then(res => {
+                    console.log(res.data);
+                    setQuestion(res.data)
+                }).catch(err => {   
+                    console.log(err);
+                })
+            }
+        })
     }, []);
 
     return (
         <div className="flex-column center">
-            <Prompt question={question.question} />
+            <Prompt question={question.text} />
             <CodeEditor source={source} setSource={setSource} mode={mode} />
             <DriverEditor driver={driver} setDriver={setDriver} mode={mode} />
             <div>
@@ -94,7 +112,6 @@ function Prompt({ question }) {
 }
 
 function DriverEditor({ driver, setDriver }) {
-
     return (
         <AceEditor
             mode="python"
@@ -144,27 +161,27 @@ function Output({ output }) {
 }
 
 const driverStyle = {
-    width: "80%",
+    width: "100%",
     margin: "5px",
     borderRadius: "10px",
     minHeight: "50px"
 }
 
 const codeStyle = {
-    width: "80%",
+    width: "100%",
     height: "600px",
     borderRadius: "5px 5px 10px 10px",
     margin: "0px 5px 5px 5px",
 };
 
 const promptStyle = {
-    width: "80%",
+    width: "100%",
     margin: "5px 5px 0px 5px",
     borderRadius: "10px 10px 5px 5px"
 };
 
 const outputStyle = {
-    width: "80%",
+    width: "100%",
     margin: "5px",
     borderRadius: "10px",
     minHeight: "50px",

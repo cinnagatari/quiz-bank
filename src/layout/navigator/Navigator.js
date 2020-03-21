@@ -13,7 +13,7 @@ export default function Navigator() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                    <Nav.Link as={Link} to="/">Dashboard</Nav.Link>
+                    {/* <Nav.Link as={Link} to="/">Dashboard</Nav.Link> */}
                     <Nav.Link as={Link} to="/questions">Questions</Nav.Link>
                 </Nav>
                 <Nav className="justify-content-end">

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import axios from "axios";
+import storage from "electron-json-storage";
 
-export default function Login() {
+export default function Login({ setLoggedIn }) {
     let [username, setUsername] = useState("");
     let [password, setPassword] = useState("");
 
@@ -19,8 +19,11 @@ export default function Login() {
             })
         }).then(res => {
             res.json().then(data => {
-                console.log(data.token.token);
-            })
+                storage.set("token", { token: data.token.token }, err => {
+                    if (err) console.log(err);
+                    else setLoggedIn(true);
+                });
+            });
         });
     }
 

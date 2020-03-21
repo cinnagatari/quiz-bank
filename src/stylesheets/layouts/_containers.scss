@@ -12,6 +12,7 @@
     justify-content: center;
 }
 
+
 .login-container {
     border: 1px solid lightgray;
     border-radius: 10px;
@@ -19,4 +20,14 @@
     padding: 20px;
     margin: 20px;
     background-color: white;
+}
+
+.page-container {
+    width: 80%;
+    min-height: 50vh;
+}
+
+.pb-container {
+    height: 100%;
+    justify-content: center;
 }
