@@ -25,9 +25,35 @@
 .page-container {
     width: 80%;
     min-height: 50vh;
+    padding-top: 5px;
 }
 
 .pb-container {
     height: 100%;
     justify-content: center;
+}
+
+.btn-container-1 {
+    display: flex;
+    width: 100%;
+    height: 50px;
+    background-color: $gray;
+    border-radius: 5px;
+    padding: 5px 20px;
+}
+
+.btn-container-1 > div {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.btn-container-1 > div:first-child {
+    width: 75%;
+}
+
+.btn-container-1 > div:last-child {
+    display: flex;
+    width: 25%;
+    justify-content: space-evenly;
 }

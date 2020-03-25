@@ -19,10 +19,13 @@ export default function Login({ setLoggedIn }) {
             })
         }).then(res => {
             res.json().then(data => {
-                storage.set("token", { token: data.token.token }, err => {
+                storage.set("userdata", { token: data.token.token, name: data.name, uid: data.uid }, err => {
                     if (err) console.log(err);
                     else setLoggedIn(true);
                 });
+            }).catch(err => {
+                console.log(err);
+                console.log();
             });
         });
     }
