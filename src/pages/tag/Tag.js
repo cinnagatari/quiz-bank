@@ -1,46 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import storage from "electron-json-storage";
+import ls from "../../storage/ls";
 import { Card, CardColumns, Button } from "react-bootstrap";
 
 export default function Tag({ match }) {
-    let [questions, setQuestions] = useState([]);
-    let [progress, setProgress] = useState([]);
+    let [questions, setQuestions] = useState({ quizzes: [] });
 
     useEffect(() => {
-        storage.get("tag-" + match.params.id, (err, data) => {
-            if (err) console.log(err);
-            setProgress(data);
-            storage.get("userdata", (err, data) => {
-                axios({
-                    url: `http://api.irvinecode.net/api/v1/codequiz?tag=${match.params.id}`,
-                    method: "get",
-                    headers: {
-                        Authorization: `Bearer ${data.token}`
-                    }
-                })
-                    .then(res => {
-                        setQuestions(res.data);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-            });
+        ls.getTag(match.params.id).then(data => {
+            setQuestions(data);
         });
     }, []);
 
     return (
-        <CardColumns style={{ flexWrap: "wrap" }}>
-            {questions.map((q, i) => (
+        <div className="quiz-container">
+            {questions.quizzes.map((q, i) => (
                 <Question
                     question={q}
                     key={i}
-                    progress={progress}
+                    progress={questions}
                     tag={match.params.id}
                 />
             ))}
-        </CardColumns>
+        </div>
     );
 }
 
@@ -62,15 +44,14 @@ function Question({ question, progress, tag }) {
 }
 
 function checkProgress(progress, id, text) {
-    let p = progress["submission-" + id];
-    if (text && p) {
-        if (p.total === p.correct) return "Completed";
+    let p = progress["quiz-" + id];
+    if (typeof p === "undefined" && text) return "View Question";
+    if (typeof p === "undefined") return "secondary";
+
+    if (text) {
+        if (p) return "Completed";
         else return "In Progress";
     }
-    if (text) return "View Question";
-    if (p) {
-        if (p.total === p.correct) return "success";
-        else return "warning";
-    }
-    return "secondary";
+    if (p) return "success";
+    else return "warning";
 }

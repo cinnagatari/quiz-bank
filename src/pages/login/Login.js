@@ -19,6 +19,7 @@ export default function Login({ setLoggedIn }) {
             })
         }).then(res => {
             res.json().then(data => {
+                console.log(data);
                 storage.set("userdata", { token: data.token.token, name: data.name, uid: data.uid }, err => {
                     if (err) console.log(err);
                     else setLoggedIn(true);

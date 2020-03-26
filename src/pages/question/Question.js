@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import path from "path";
 import fs from "fs";
-import storage from "electron-json-storage";
-import axios from "axios";
+import ls from "../../storage/ls";
+import { Link } from "react-router-dom";
 import { Splicer } from "./Splicer";
 import { exec } from "child_process";
 import { Button, ButtonGroup, ProgressBar } from "react-bootstrap";
@@ -31,6 +31,10 @@ export default function Question({ match }) {
 
     function test(submit) {
         let input = Splicer.compile(source, question[mode], mode);
+        if(input === "") {
+            setOutput("Question needs to be updated.");
+            return;
+        }
         let p = path.resolve() + "\\";
         let f = "Solution" + (mode === "python" ? ".py" : ".java");
         fs.writeFile(p + f, submit ? input : source, err => {
@@ -79,43 +83,15 @@ export default function Question({ match }) {
         if ((correct / total) * 100 === 100) setOutput("All correct!");
         else setOutput(output);
         if (correct > 0)
-            storage.get("tag-" + match.params.tag, (err, data) => {
-                let key = "submission-" + match.params.id;
-
-                if (
-                    typeof data[key] === "undefined" ||
-                    data[key].correct < correct
-                ) {
-                    let body = {
-                        user_id: data.uid,
-                        quiz_id: match.params.id,
-                        pt: correct,
-                        pt_outof: total,
-                        code: source,
-                        type: mode
-                    };
-                    storage.get("userdata", (err, data) => {
-                        axios({
-                            url: `http://api.irvinecode.net/api/v1/codequizrecords/me`,
-                            method: "post",
-                            headers: {
-                                Authorization: `Bearer ${data.token}`
-                            },
-                            data: body
-                        })
-                            .then(res => {})
-                            .catch(err => {});
-                    });
-                    storage.set("tag-" + match.params.tag, {
-                        ...data,
-                        [key]: {
-                            correct,
-                            total,
-                            source
-                        }
-                    });
-                }
-            });
+            ls.submitQuiz(
+                match.params.id,
+                match.params.tag,
+                correct,
+                total,
+                source,
+                mode,
+                question
+            );
     }
 
     function reset() {
@@ -123,46 +99,14 @@ export default function Question({ match }) {
     }
 
     useEffect(() => {
-        storage.get("tag-" + match.params.tag, (err, question) => {
-            if (
-                Object.keys(question).length === 0 ||
-                typeof question["quiz-" + match.params.id] === "undefined"
-            )
-                storage.get("userdata", (err, data) => {
-                    axios({
-                        url: `http://api.irvinecode.net/api/v1/codequiz/${match.params.id}`,
-                        method: "get",
-                        headers: {
-                            Authorization: `Bearer ${data.token}`
-                        }
-                    })
-                        .then(res => {
-                            storage.set(
-                                "tag-" + match.params.tag,
-                                {
-                                    ...question,
-                                    ["quiz-" + match.params.id]: res.data
-                                },
-                                err => {}
-                            );
-                            setQuestion(res.data);
-                            setPrompt(res.data.text);
-                            if (res.data[mode])
-                                setSource(
-                                    Splicer.stripHidden(res.data[mode], mode)
-                                );
-                        })
-                        .catch(err => {});
-                });
+        ls.getQuiz(match.params.id).then(res => {
+            ls.setLastQuestion(res.q);
+            setQuestion(res.q);
+            setPrompt(res.q.text);
+            if (res.s === -1) setSource(Splicer.stripHidden(res.q[mode], mode));
             else {
-                let q = question["quiz-" + match.params.id];
-                setQuestion(q);
-                setPrompt(q.text);
-                if (question["submission-" + match.params.id]) {
-                    let s = question["submission-" + match.params.id];
-                    setSource(s.source);
-                    setProgress((s.correct / s.total) * 100);
-                } else setSource(Splicer.stripHidden(q[mode], mode));
+                setSource(res.s.source);
+                setProgress((res.s.correct / res.s.total) * 100);
             }
         });
     }, []);
@@ -173,7 +117,7 @@ export default function Question({ match }) {
 
     return (
         <div className="flex-column center">
-            <ModeSelector mode={mode} setMode={setMode} />
+            <ModeSelector mode={mode} setMode={setMode} tag={match.params.tag} />
             <Prompt prompt={prompt} />
             <CodeEditor source={source} setSource={setSource} mode={mode} />
             <div className="btn-container-1">
@@ -201,20 +145,30 @@ export default function Question({ match }) {
     );
 }
 
-function ModeSelector({ mode, setMode }) {
+function ModeSelector({ mode, setMode, tag }) {
     return (
-        <ButtonGroup style={languageStyle}>
-            {LANGUAGES.map(l => (
-                <Button
-                    variant="info"
-                    active={l === mode}
-                    onClick={() => setMode(l)}
-                    key={l}
-                >
-                    {l}
-                </Button>
-            ))}
-        </ButtonGroup>
+        <div style={topContainer}>
+            <Button
+                as={Link}
+                to={`/tag/${tag}`}
+                style={{ width: "10%" }}
+                variant="info"
+            >
+                Back
+            </Button>
+            <ButtonGroup style={{ width: "25%" }}>
+                {LANGUAGES.map(l => (
+                    <Button
+                        variant="info"
+                        active={l === mode}
+                        onClick={() => setMode(l)}
+                        key={l}
+                    >
+                        {l}
+                    </Button>
+                ))}
+            </ButtonGroup>
+        </div>
     );
 }
 
@@ -290,7 +244,8 @@ const outputStyle = {
     minHeight: "50px"
 };
 
-const languageStyle = {
-    width: "25%",
-    marginLeft: "75%"
+const topContainer = {
+    display: "flex",
+    width: "100%",
+    justifyContent: "space-between"
 };

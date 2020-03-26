@@ -9,7 +9,7 @@ export default function Navigator() {
     useEffect(() => {
         storage.get("userdata", (err, data) => {
             if (err) console.log(err);
-            if(Object.keys(data).length > 0) setUser(data);
+            if (Object.keys(data).length > 0) setUser(data);
         });
     }, []);
 
@@ -23,26 +23,16 @@ export default function Navigator() {
                 />
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            {user && (
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="mr-auto">
-                        {/* <Nav.Link as={Link} to="/">Dashboard</Nav.Link> */}
-                        <Nav.Link as={Link} to="/questions">
-                            Questions
-                        </Nav.Link>
-                    </Nav>
-                    <Nav className="justify-content-end">
-                        <NavDropdown
-                            title={user.name}
-                            id="basic-nav-dropdown"
-                        >
-                            <NavDropdown.Item as={Link} to="/profile">
-                                Profile
-                            </NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-                </Navbar.Collapse>
-            )}
+            <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="mr-auto">
+                    <Nav.Link as={Link} to="/">
+                        Dashboard
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/questions">
+                        Questions
+                    </Nav.Link>
+                </Nav>
+            </Navbar.Collapse>
         </Navbar>
     );
 }

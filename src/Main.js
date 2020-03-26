@@ -8,6 +8,7 @@ import Tag from "./pages/tag/Tag";
 import Question from "./pages/question/Question";
 import Login from "./pages/login/Login";
 import storage from "electron-json-storage";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 export default function Main() {
     let [loggedIn, setLoggedIn] = useState(false);
@@ -38,10 +39,11 @@ export default function Main() {
                             <Route path="/questions" component={Questions} />
                             <Route path={`/tag/:id`} component={Tag} />
                             <Route path="/question/:tag/:id" component={Question} />
+                            <Route exact path={"/"} component={Dashboard} />
                         </Switch>
                     </div>
                 )}
-                <button onClick={() => clearStorage()}>clear</button>
+                {/* <button onClick={() => clearStorage()}>clear</button> */}
                 <Footer />
             </div>
         </Router>
