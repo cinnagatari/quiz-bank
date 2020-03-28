@@ -4,6 +4,7 @@ const BrowserWindow = electron.BrowserWindow;
 
 const path = require("path");
 const isDev = require("electron-is-dev");
+require('update-electron-app')()
 
 let mainWindow;
 
