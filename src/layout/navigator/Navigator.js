@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Navbar, Nav, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import logo from '../../assets/logo.png';
 
 const VERSION = 2;
 
@@ -27,7 +28,7 @@ export default function Navigator() {
                 <img
                     className="logo"
                     alt="logo"
-                    src="https://i.imgur.com/eMcz8Xs.png"
+                    src={logo}
                 />
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />

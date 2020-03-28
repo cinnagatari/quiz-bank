@@ -3,7 +3,6 @@ import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import Navigator from "./layout/navigator/Navigator";
 import Profile from "./pages/profile/Profile";
 import Questions from "./pages/questions/Questions";
-import Footer from "./layout/footer/Footer";
 import Tags from "./pages/tags/Tags";
 import Question from "./pages/question/Question";
 import Login from "./pages/login/Login";
@@ -37,7 +36,6 @@ export default function Main() {
                         </Switch>
                     </div>
                 )}
-                <Footer />
             </div>
         </Router>
     );
