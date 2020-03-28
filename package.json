@@ -1,10 +1,11 @@
 {
   "name": "quiz-bank",
-  "author": "David",
+  "author": "BTree",
   "productName": "BTree Quiz Portal",
   "version": "0.1.0",
   "private": true,
   "homepage": "./",
+  "description": "BTree Code Academy Quiz Portal",
   "build": {
     "appId": "com.example.electron-cra",
     "files": [
@@ -44,8 +45,8 @@
     "preelectron-pack": "yarn build",
     "electron-dev": "concurrently \"SET BROWSER=none&&npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
-    "package-win": "electron-packager . quiz-bank --overwrite --asar=true --platform=win32 --arch=ia32 --icon=assets/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"BTree Quiz Portal\"",
-    "package-linux": "electron-packager . quiz-bank --overwrite --asar=true --platform=linux --arch=x64 --icon=assets/icon.ico --prune=true --out=release-builds"
+    "package-win": "electron-packager . QuizPortal --overwrite --asar --platform=win32 --arch=ia32 --icon=assets/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"BTree Quiz Portal\"",
+    "package-linux": "electron-packager . QuizPortal --overwrite --asar --platform=linux --arch=x64 --icon=assets/icon.ico --prune=true --out=release-builds"
   },
   "eslintConfig": {
     "extends": "react-app"

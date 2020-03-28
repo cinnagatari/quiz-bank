@@ -14,6 +14,7 @@ export default function Main() {
     let [loggedIn, setLoggedIn] = useState(false);
 
     useEffect(() => {
+        
         storage.get("userdata", (err, data) => {
             if (err) console.log(err);
             if (Object.keys(data).length > 0) setLoggedIn(true);

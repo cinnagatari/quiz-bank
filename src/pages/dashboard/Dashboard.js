@@ -3,6 +3,7 @@ import ls from "../../storage/ls";
 import storage from "electron-json-storage";
 import { Card, Button, ProgressBar } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import SimpleMDE from "react-simplemde-editor";
 
 export default function Dashboard() {
     let [user, setUser] = useState({ name: "" });
@@ -91,7 +92,9 @@ function Submission({ submission }) {
     }
 
     let btnText = submission.progress === 100 ? "Completed" : "Continue";
-    let title = submission.question.question.name + (submission.time ? " @ " + submission.time : "");
+    let title =
+        submission.question.question.name +
+        (submission.time ? " @ " + submission.time : "");
     return (
         <Card
             bg="dark"
@@ -102,7 +105,7 @@ function Submission({ submission }) {
             <Card.Body>
                 <Button
                     as={Link}
-                    to={`/question/${submission.question.question.tag}/${submission.question.question.id}`}
+                    to={`/tag/${submission.question.question.tag}/${submission.question.question.id}`}
                     style={{ marginBottom: "10px" }}
                     variant={check(submission.progress)}
                 >
@@ -119,15 +122,29 @@ function Submission({ submission }) {
 }
 
 function LastQuestion({ question }) {
+    let previewOnLoad = instance => {
+        instance.togglePreview();
+    };
     return (
         <div style={container}>
-            <Card bg="dark" text="white" style={{ width: "200px" }}>
+            <Card bg="dark" text="white" style={{ width: "100%"}}>
                 <Card.Header>Last Viewed Question</Card.Header>
                 <Card.Body>
                     <Card.Text>{question.name}</Card.Text>
+                    <SimpleMDE
+                        getMdeInstance={previewOnLoad}
+                        value={question.text}
+                        options={{
+                            lineWrapping: false,
+                            spellChecker: false,
+                            toolbar: false,
+                            status: false
+                        }}
+                        style={promptStyle}
+                    />
                     <Button
                         as={Link}
-                        to={`/question/${question.tag}/${question.id}`}
+                        to={`/tag/${question.tag}/${question.id}`}
                         variant="info"
                     >
                         Resume
@@ -144,4 +161,11 @@ const container = {
     justifyContent: "center",
     alignItems: "flex-start",
     marginTop: "10px"
+};
+
+const promptStyle = {
+    width: "100%",
+    borderRadius: "10px",
+    marginBottom: "10px",
+    backgroundColor: "lightskyblue"
 };
