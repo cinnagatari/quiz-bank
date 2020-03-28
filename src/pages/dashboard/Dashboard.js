@@ -15,7 +15,6 @@ export default function Dashboard() {
             if (Object.keys(data).length > 0) {
                 ls.getLastQuestion().then(res => {
                     ls.getRecent().then(res => {
-                        console.log(res);
                         if (Object.keys(res).length > 0) setRecent(res);
                         ls.getProgressToday().then(res => {
                             setProgress(res);
@@ -77,8 +76,8 @@ function RecentSubmissions({ recent }) {
         <Card bg="dark" text="white" style={{ width: "100%" }}>
             <Card.Header>Recent Submissions</Card.Header>
             <Card.Body>
-                {recent.submissions.map(s => (
-                    <Submission submission={s} key={s.question.id} />
+                {recent.submissions.map((s, i) => (
+                    <Submission submission={s} key={"recent-" + i} />
                 ))}
             </Card.Body>
         </Card>

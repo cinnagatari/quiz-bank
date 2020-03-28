@@ -136,19 +136,12 @@ const ls = {
     },
 
     getQuiz: async function(quiz) {
-        let ret = {
-            q: -1,
-            s: -1
-        };
         let id = quiz;
         quiz = "quiz-" + quiz;
         let promise = new Promise((resolve, reject) => {
             storage.get(quiz, (err, question) => {
-                if (question["submission"]) ret.s = question["submission"];
-                if (question["question"]) {
-                    ret.q = question["question"];
-                    resolve(ret);
-                } else
+                if (question.question && question.submission) resolve(question);
+                else
                     storage.get("userdata", (err, data) => {
                         axios({
                             url: `http://api.irvinecode.net/api/v1/codequiz/${id}`,
@@ -160,12 +153,11 @@ const ls = {
                             .then(res => {
                                 console.log(res);
                                 question["question"] = res.data;
-                                ret.q = res.data;
                                 storage.set(quiz, question, err => {});
-                                resolve(ret);
+                                resolve(question);
                             })
                             .catch(err => {
-                                resolve(ret);
+                                console.log(err);
                             });
                     });
             });
@@ -243,9 +235,6 @@ const ls = {
 
     addRecent: function(question, correct, total) {
         storage.get("recent-submissions", (err, data) => {
-
-
-
             let submission = {
                 question,
                 progress: (correct / total) * 100,
@@ -313,6 +302,115 @@ const ls = {
             }
             storage.set("progress-today", progress, err => {});
         });
+    },
+
+    syncTags: async function() {
+        let promise = new Promise((resolve, reject) => {
+            storage.get("tags", (err, tags) => {
+                storage.get("userdata", (err, data) => {
+                    axios({
+                        method: "get",
+                        url: "https://api.irvinecode.net/api/v1/codequizTag",
+                        headers: {
+                            Authorization: `Bearer ${data.token}`
+                        }
+                    })
+                        .then(res => {
+                            console.log(res);
+                            let TAGS = res.data;
+                            let sections = [];
+                            TAGS.forEach(tag => {
+                                let title = tag.name;
+                                title = title
+                                    .split("")
+                                    .reverse()
+                                    .join();
+                                let index = title.indexOf("-");
+                                let section = tag.name.substring(
+                                    0,
+                                    tag.name.length - index
+                                );
+                                let found = false;
+                                sections.forEach(s => {
+                                    if (s.section === section) {
+                                        s.tags.push(tag);
+                                        found = true;
+                                    }
+                                });
+                                if (!found)
+                                    sections.push({
+                                        section: section,
+                                        tags: [tag]
+                                    });
+                            });
+                            tags["tags"] = sections;
+                            storage.set("tags", tags, err => {});
+                            resolve(tags);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
+                });
+            });
+        });
+        let result = await promise;
+        return result;
+    },
+
+    syncQuestions: async function(tag) {
+        let key = "tag-" + tag;
+        let promise = new Promise((resolve, reject) => {
+            storage.get(key, (err, questions) => {
+                storage.get("userdata", (err, user) => {
+                    axios({
+                        url: `http://api.irvinecode.net/api/v1/codequiz?tag=${tag}`,
+                        method: "get",
+                        headers: {
+                            Authorization: `Bearer ${user.token}`
+                        }
+                    })
+                        .then(res => {
+                            console.log(res);
+                            questions["quizzes"] = res.data;
+                            storage.set(key, questions, err => {});
+                            resolve(questions);
+                        })
+                        .catch(err => {});
+                });
+            });
+        });
+
+        let result = await promise;
+
+        return result;
+    },
+
+    syncQuestion: async function(question) {
+        let key = "quiz-" + question;
+        let promise = new Promise((resolve, reject) => {
+            storage.get(key, (err, q) => {
+                storage.get("userdata", (err, data) => {
+                    axios({
+                        url: `http://api.irvinecode.net/api/v1/codequiz/${question}`,
+                        method: "get",
+                        headers: {
+                            Authorization: `Bearer ${data.token}`
+                        }
+                    })
+                        .then(res => {
+                            console.log(res);
+                            q["question"] = res.data;
+                            storage.set(key, q, err => {});
+                            resolve(q);
+                        })
+                        .catch(err => {
+                            resolve(q);
+                        });
+                });
+            });
+        });
+        let result = await promise;
+        return result;
     }
 };
 

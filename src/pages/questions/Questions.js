@@ -1,114 +1,92 @@
 import React, { useState, useEffect } from "react";
-import {
-    Accordion,
-    Card,
-    ProgressBar,
-    Button,
-    Popover,
-    OverlayTrigger
-} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import ls from "../../storage/ls";
+import { Card, Button, Spinner } from "react-bootstrap";
 
-export default function Questions() {
-    let [sections, setSections] = useState({ tags: [] });
+export default function Questions({ match }) {
+    let [questions, setQuestions] = useState({ quizzes: [] });
+    let [syncing, setSyncing] = useState(false);
+    let [synced, setSynced] = useState(false);
 
     useEffect(() => {
-        ls.getTags().then(res => {
-            console.log(res);
-            setSections(res);
+        setSyncing(true);
+        ls.getTag(match.params.id).then(data => {
+            setQuestions(data);
+            setSyncing(false);
         });
     }, []);
 
-    return (
-        <Accordion variant="dark" defaultActiveKey="0">
-            {sections.tags.map((section, index) => (
-                <Section
-                    sections={sections}
-                    section={section}
-                    key={"section-" + index}
-                    index={index}
-                />
-            ))}
-        </Accordion>
-    );
-}
+    function sync() {
+        setSyncing(true);
+        ls.syncQuestions(match.params.id).then(res => {
+            setQuestions(res);
+            setSyncing(false);
+            setSynced(true);
+        });
+    }
 
-function Section({ sections, section, index }) {
     return (
-        <Card bg="dark" text="white">
-            <Accordion.Toggle as={Card.Header} variant="link" eventKey={index}>
-                {section.section}
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey={index}>
-                <Card.Body style={{ width: "100%" }}>
-                    <Tags tags={section.tags} sections={sections} />
-                </Card.Body>
-            </Accordion.Collapse>
-        </Card>
-    );
-}
-
-function Tags({ tags, sections }) {
-    return (
-        <div className="tag-container">
-            {tags.map((t, i) => (
-                <Card key={"tag-" + t.id} bg="secondary" text="white">
-                    <Card.Header>{t.name}</Card.Header>
-                    <Card.Body>
+        <div>
+            <Card bg="dark" text="white" style={{ margin: "0.5%" }}>
+                <Card.Header>
+                    <div className="flex-row-between-center">
+                        <h1>Questions</h1>
                         <Button
-                            as={Link}
-                            className="link-override"
-                            to={`/tag/${t.id}`}
-                            variant={
-                                setProgress(sections, t) === 100
-                                    ? "success"
-                                    : "info"
-                            }
+                            variant={synced ? "success" : "primary"}
+                            onClick={() => sync()}
+                            style={{ minWidth: "100px" }}
                         >
-                            {setProgress(sections, t) === 100
-                                ? "Completed"
-                                : "View Questions"}
+                            {syncing ? (
+                                <Spinner animation="border" variant="light" />
+                            ) : synced ? (
+                                "Synced"
+                            ) : (
+                                "Sync"
+                            )}
                         </Button>
-                        <OverlayTrigger
-                            trigger="click"
-                            placement="top"
-                            overlay={popover(t.desc)}
-                        >
-                            <Button
-                                style={{ width: "35px", marginLeft: "5px" }}
-                                variant="warning"
-                            >
-                                i
-                            </Button>
-                        </OverlayTrigger>
-                        <ProgressBar
-                            animated
-                            variant={
-                                setProgress(sections, t) === 100
-                                    ? "success"
-                                    : "info"
-                            }
-                            style={{ marginTop: "20px" }}
-                            now={setProgress(sections, t)}
-                        ></ProgressBar>
-                    </Card.Body>
-                </Card>
-            ))}
+                    </div>
+                </Card.Header>
+            </Card>
+            <div className="quiz-container">
+                {questions.quizzes.map((q, i) => (
+                    <Question
+                        question={q}
+                        key={i}
+                        progress={questions}
+                        tag={match.params.id}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
 
-function setProgress(sections, tag) {
-    if (sections["tag-" + tag.id]) return sections["tag-" + tag.id];
-    return 0;
+function Question({ question, progress, tag }) {
+    return (
+        <Card bg="dark" key={question.id} text="white">
+            <Card.Header>{question.name}</Card.Header>
+            <Card.Body>
+                <Button
+                    variant={checkProgress(progress, question.id)}
+                    as={Link}
+                    to={`/tag/${tag}/${question.id}`}
+                >
+                    {checkProgress(progress, question.id, true)}
+                </Button>
+            </Card.Body>
+        </Card>
+    );
 }
 
-function popover(desc) {
-    return (
-        <Popover id="popover-basic">
-            <Popover.Title as="h3">Details</Popover.Title>
-            <Popover.Content>{desc}</Popover.Content>
-        </Popover>
-    );
+function checkProgress(progress, id, text) {
+    let p = progress["quiz-" + id];
+    if (typeof p === "undefined" && text) return "View Question";
+    if (typeof p === "undefined") return "secondary";
+
+    if (text) {
+        if (p) return "Completed";
+        else return "In Progress";
+    }
+    if (p) return "success";
+    else return "warning";
 }

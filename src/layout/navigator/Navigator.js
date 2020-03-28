@@ -1,17 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Navbar, Nav, NavDropdown } from "react-bootstrap";
+import React from "react";
+import { Navbar, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import storage from "electron-json-storage";
 
 export default function Navigator() {
-    let [user, setUser] = useState(undefined);
-
-    useEffect(() => {
-        storage.get("userdata", (err, data) => {
-            if (err) console.log(err);
-            if (Object.keys(data).length > 0) setUser(data);
-        });
-    }, []);
 
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="navigator">
@@ -28,7 +19,7 @@ export default function Navigator() {
                     <Nav.Link as={Link} to="/">
                         Dashboard
                     </Nav.Link>
-                    <Nav.Link as={Link} to="/questions">
+                    <Nav.Link as={Link} to="/tags">
                         Questions
                     </Nav.Link>
                 </Nav>

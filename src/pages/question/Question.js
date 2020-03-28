@@ -5,7 +5,7 @@ import ls from "../../storage/ls";
 import { Link } from "react-router-dom";
 import { Splicer } from "./Splicer";
 import { exec } from "child_process";
-import { Button, ButtonGroup, ProgressBar } from "react-bootstrap";
+import { Button, ButtonGroup, ProgressBar, Spinner } from "react-bootstrap";
 import SimpleMDE from "react-simplemde-editor";
 import AceEditor from "react-ace";
 import "easymde/dist/easymde.min.css";
@@ -28,10 +28,12 @@ export default function Question({ match }) {
     let [output, setOutput] = useState("");
     let [mode, setMode] = useState("java");
     let [progress, setProgress] = useState(0);
+    let [syncing, setSyncing] = useState(false);
+    let [synced, setSynced] = useState(false);
 
     function test(submit) {
         let input = Splicer.compile(source, question[mode], mode);
-        if(input === "") {
+        if (input === "") {
             setOutput("Question needs to be updated.");
             return;
         }
@@ -98,15 +100,37 @@ export default function Question({ match }) {
         setSource(Splicer.stripHidden(question[mode], mode));
     }
 
+    function sync() {
+        setSyncing(true);
+        ls.syncQuestion(match.params.id).then(res => {
+            setQuestion(res.question);
+            setPrompt(res.question.text);
+            if (res.submission) {
+                setSource(res.submission.source);
+                setProgress(
+                    (res.submission.correct / res.submission.total) * 100
+                );
+            } else {
+                setSource(Splicer.stripHidden(res.question[mode], mode));
+            }
+            setSyncing(false);
+            setSynced(true);
+        });
+    }
+
     useEffect(() => {
         ls.getQuiz(match.params.id).then(res => {
-            ls.setLastQuestion(res.q);
-            setQuestion(res.q);
-            setPrompt(res.q.text);
-            if (res.s === -1) setSource(Splicer.stripHidden(res.q[mode], mode));
-            else {
-                setSource(res.s.source);
-                setProgress((res.s.correct / res.s.total) * 100);
+            ls.setLastQuestion(res.question);
+            setQuestion(res.question);
+            setPrompt(res.question.text);
+            if (res.submission) {
+                setSource(res.submission.source);
+                setProgress(
+                    (res.submission.correct / res.submission.total) * 100
+                );
+            } else {
+                let source = Splicer.stripHidden(res.question[mode], mode);
+                setSource(source);
             }
         });
     }, []);
@@ -117,7 +141,37 @@ export default function Question({ match }) {
 
     return (
         <div className="flex-column center">
-            <ModeSelector mode={mode} setMode={setMode} tag={match.params.tag} />
+            <div style={{ display: "flex", width: "100%" }}>
+                <div className="flex-row-between-center">
+                    <Button
+                        as={Link}
+                        to={`/tag/${match.params.tag}`}
+                        style={{ minWidth: "100px" }}
+                        variant="info"
+                    >
+                        Back
+                    </Button>
+                    <Button
+                        variant={synced ? "success" : "primary"}
+                        onClick={() => sync()}
+                        style={{ minWidth: "100px", marginLeft: "5px" }}
+                    >
+                        {syncing ? (
+                            <Spinner animation="border" variant="light" />
+                        ) : synced ? (
+                            "Synced"
+                        ) : (
+                            "Sync"
+                        )}
+                    </Button>
+                </div>
+                <ModeSelector
+                    mode={mode}
+                    setMode={setMode}
+                    tag={match.params.tag}
+                    sync={sync}
+                />
+            </div>
             <Prompt prompt={prompt} />
             <CodeEditor source={source} setSource={setSource} mode={mode} />
             <div className="btn-container-1">
@@ -145,17 +199,9 @@ export default function Question({ match }) {
     );
 }
 
-function ModeSelector({ mode, setMode, tag }) {
+function ModeSelector({ mode, setMode, tag, sync }) {
     return (
         <div style={topContainer}>
-            <Button
-                as={Link}
-                to={`/tag/${tag}`}
-                style={{ width: "10%" }}
-                variant="info"
-            >
-                Back
-            </Button>
             <ButtonGroup style={{ width: "25%" }}>
                 {LANGUAGES.map(l => (
                     <Button
@@ -247,5 +293,5 @@ const outputStyle = {
 const topContainer = {
     display: "flex",
     width: "100%",
-    justifyContent: "space-between"
+    justifyContent: "flex-end"
 };

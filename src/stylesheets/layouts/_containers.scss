@@ -12,6 +12,11 @@
     justify-content: center;
 }
 
+.flex-row-between-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
 .login-container {
     border: 1px solid lightgray;
