@@ -7,7 +7,7 @@ import logo from '../../assets/logo.png';
 const VERSION = 2;
 
 export default function Navigator() {
-    let [update, setUpdate] = useState(true);
+    let [update, setUpdate] = useState(false);
 
     useEffect(() => {
         axios({
