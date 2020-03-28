@@ -93,6 +93,7 @@ function Submission({ submission }) {
 
     let btnText = submission.progress === 100 ? "Completed" : "Continue";
     let title =
+        "[" + submission.mode + "] " +
         submission.question.question.name +
         (submission.time ? " @ " + submission.time : "");
     return (
@@ -127,7 +128,7 @@ function LastQuestion({ question }) {
     };
     return (
         <div style={container}>
-            <Card bg="dark" text="white" style={{ width: "100%"}}>
+            <Card bg="dark" text="white" style={{ width: "100%" }}>
                 <Card.Header>Last Viewed Question</Card.Header>
                 <Card.Body>
                     <Card.Text>{question.name}</Card.Text>

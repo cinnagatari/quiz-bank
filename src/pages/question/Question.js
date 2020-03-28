@@ -105,10 +105,12 @@ export default function Question({ match }) {
         ls.syncQuestion(match.params.id).then(res => {
             setQuestion(res.question);
             setPrompt(res.question.text);
-            if (res.submission) {
-                setSource(res.submission.source);
+            if (res.submission && res.submission[mode]) {
+                setSource(res.submission[mode].source);
                 setProgress(
-                    (res.submission.correct / res.submission.total) * 100
+                    (res.submission[mode].correct /
+                        res.submission[mode].total) *
+                        100
                 );
             } else {
                 setSource(Splicer.stripHidden(res.question[mode], mode));
@@ -123,20 +125,28 @@ export default function Question({ match }) {
             ls.setLastQuestion(res.question);
             setQuestion(res.question);
             setPrompt(res.question.text);
-            if (res.submission) {
-                setSource(res.submission.source);
+            if (res.submission && res.submission[mode]) {
+                setSource(res.submission[mode].source);
                 setProgress(
-                    (res.submission.correct / res.submission.total) * 100
+                    (res.submission[mode].correct /
+                        res.submission[mode].total) *
+                        100
                 );
-            } else {
-                let source = Splicer.stripHidden(res.question[mode], mode);
-                setSource(source);
-            }
+            } else setSource(Splicer.stripHidden(res.question[mode], mode));
         });
     }, []);
 
     useEffect(() => {
-        setSource(Splicer.stripHidden(question[mode], mode));
+        ls.getQuiz(match.params.id).then(res => {
+            if (res.submission && res.submission[mode]) {
+                setSource(res.submission[mode].source);
+                setProgress(
+                    (res.submission[mode].correct /
+                        res.submission[mode].total) *
+                        100
+                );
+            } else setSource(Splicer.stripHidden(res.question[mode], mode));
+        });
     }, [mode]);
 
     return (

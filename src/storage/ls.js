@@ -118,7 +118,7 @@ const ls = {
 
         storage.get(tag, (err, data) => {
             if (Object.keys(data).length > 0) {
-                data[quiz] = correct === total;
+                if (!data[quiz]) data[quiz] = correct === total;
                 storage.set(tag, data, err => {
                     if (correct === total) this.setTags(id);
                 });
@@ -140,7 +140,7 @@ const ls = {
         quiz = "quiz-" + quiz;
         let promise = new Promise((resolve, reject) => {
             storage.get(quiz, (err, question) => {
-                if (question.question && question.submission) resolve(question);
+                if (question.question) resolve(question);
                 else
                     storage.get("userdata", (err, data) => {
                         axios({
@@ -172,7 +172,8 @@ const ls = {
         storage.get(quiz, (err, question) => {
             if (
                 typeof question["submission"] === "undefined" ||
-                question["submission"].correct < correct
+                typeof question["submission"][mode] === "undefined" ||
+                question["submission"][mode].correct < correct
             ) {
                 storage.get("userdata", (err, data) => {
                     let body = {
@@ -197,13 +198,11 @@ const ls = {
                         .catch(err => {});
                 });
                 question["submission"] = {
-                    source,
-                    total,
-                    correct
+                    [mode]: { source, total, correct }
                 };
                 storage.set(quiz, question, err => {});
                 this.setTag(tag, id, correct, total);
-                this.addRecent(question, correct, total);
+                this.addRecent(question, correct, total, mode);
                 if (correct === total) this.setProgressToday();
             }
         });
@@ -233,12 +232,13 @@ const ls = {
         return result;
     },
 
-    addRecent: function(question, correct, total) {
+    addRecent: function(question, correct, total, mode) {
         storage.get("recent-submissions", (err, data) => {
             let submission = {
                 question,
                 progress: (correct / total) * 100,
-                time: new Date().toLocaleString()
+                time: new Date().toLocaleString(),
+                mode
             };
             if (Object.keys(data).length > 0) {
                 data.submissions.unshift(submission);
